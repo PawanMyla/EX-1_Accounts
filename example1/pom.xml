@@ -4,71 +4,72 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Input customer details
-        System.out.println("Enter customer details (format: customerNumber,firstName,surname):");
-        String customerInput = scanner.nextLine();
-        String[] customerDetails = customerInput.split(",");
+        // --- Input all details in a single line ---
+        System.out.println("Enter details in the following format:");
+        System.out.println("customerNumber,firstName,surname|primaryPhone,secondaryPhone,countryCode,phoneType;primaryPhone,secondaryPhone,countryCode,phoneType|accountNumber,balance,productCode,productModes,linkedAccounts;accountNumber,balance,productCode,productModes,linkedAccounts");
+
+        String input = scanner.nextLine();
+
+        // --- Parsing the input ---
+        String[] sections = input.split("\\|");
+
+        // Customer details: customerNumber,firstName,surname
+        String[] customerDetails = sections[0].split(",");
         String customerNumber = customerDetails[0];
         String firstName = customerDetails[1];
         String surname = customerDetails[2];
 
-        // Input phone details
+        // Phone details: primaryPhone,secondaryPhone,countryCode,phoneType; (multiple phones separated by ;)
+        String[] phoneDetailsInput = sections[1].split(";");
         List<PhoneDetails> phoneDetailsList = new ArrayList<>();
-        System.out.println("Enter phone details (format: primaryPhone,secondaryPhone,countryCode,phoneType;...):");
-        String phoneInput = scanner.nextLine();
-        String[] phoneEntries = phoneInput.split(";");
-        
-        for (String phoneEntry : phoneEntries) {
-            String[] phoneData = phoneEntry.split(",");
-            String primaryPhone = phoneData[0];
-            String secondaryPhone = phoneData[1];
-            String countryCode = phoneData[2].isEmpty() ? null : phoneData[2];
-            String phoneType = phoneData[3];
-            phoneDetailsList.add(new PhoneDetails(primaryPhone, secondaryPhone, countryCode, phoneType));
+        for (String phoneStr : phoneDetailsInput) {
+            String[] phoneData = phoneStr.split(",");
+            PhoneDetails phoneDetails = new PhoneDetails(phoneData[0], phoneData[1], phoneData[2].isEmpty() ? null : phoneData[2], phoneData[3]);
+            phoneDetailsList.add(phoneDetails);
         }
 
-        // Input account details
+        // Account details: accountNumber,balance,productCode,productModes,linkedAccounts; (multiple accounts separated by ;)
+        String[] accountDetailsInput = sections[2].split(";");
         List<Account> accountList = new ArrayList<>();
-        System.out.println("Enter account details (format: accountNumber,balance,productCode,productModes,linkedAccounts;...):");
-        String accountInput = scanner.nextLine();
-        String[] accountEntries = accountInput.split(";");
-
-        for (String accountEntry : accountEntries) {
-            String[] accountData = accountEntry.split(",");
+        for (String accountStr : accountDetailsInput) {
+            String[] accountData = accountStr.split(",");
             String accountNumber = accountData[0];
             double balance = Double.parseDouble(accountData[1]);
             String productCode = accountData[2];
             List<String> productModes = Arrays.asList(accountData[3].split("/"));
             List<String> linkedAccounts = Arrays.asList(accountData[4].split("/"));
-            accountList.add(new Account(accountNumber, balance, productCode, productModes, linkedAccounts));
+            Account account = new Account(accountNumber, balance, productCode, productModes, linkedAccounts);
+            accountList.add(account);
         }
 
-        // Create Customer object
+        // --- Create Customer object ---
         Customer customer = new Customer(customerNumber, firstName, surname, phoneDetailsList);
 
-        // Output Customer Information
+        // --- Output Customer Information ---
         System.out.println("\nCustomer Information:");
         System.out.println("Customer Number: " + customer.getCustomerNumber());
         System.out.println("Full Name: " + customer.getFullName());
 
-        // Print phone details
+        // --- Print all phone details ---
         for (PhoneDetails phone : phoneDetailsList) {
             System.out.println(phone.getPhoneType() + " Phone: " + phone.getPrimaryNumber() + ", Secondary: " + phone.getSecondaryNumber());
         }
 
-        // Print linked account numbers
-        System.out.println("Linked Account Numbers:");
+        // --- Manually process linked account numbers ---
+        List<String> linkedAccountNumbers = new ArrayList<>();
         for (Account account : accountList) {
-            System.out.println(account.getLinkedAccountNumbers());
+            linkedAccountNumbers.addAll(account.getLinkedAccountNumbers());
         }
+        System.out.println("Linked Account Numbers: " + linkedAccountNumbers);
 
-        // Print product modes
-        System.out.println("Product Mode List:");
+        // --- Manually process product mode lists ---
+        List<String> allProductModes = new ArrayList<>();
         for (Account account : accountList) {
-            System.out.println(account.getProductModeList());
+            allProductModes.addAll(account.getProductModeList());
         }
+        System.out.println("Product Mode List: " + allProductModes);
 
-        // Print account balances
+        // --- Print current balance for each account ---
         for (Account account : accountList) {
             System.out.println("Account Number: " + account.getAccountNumber() + ", Current Balance: " + account.getCurrentBalance());
         }
