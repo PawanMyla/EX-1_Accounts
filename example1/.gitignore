@@ -1,38 +1,78 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+import java.util.*;
+import java.util.stream.Collectors;
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+        // --- Input all details in a single line ---
+        System.out.println("Enter details in the following format:");
+        System.out.println("customerNumber,firstName,surname|primaryPhone,secondaryPhone,countryCode,phoneType;primaryPhone,secondaryPhone,countryCode,phoneType|accountNumber,balance,productCode,productModes,linkedAccounts;accountNumber,balance,productCode,productModes,linkedAccounts");
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+        String input = scanner.nextLine();
 
-### VS Code ###
-.vscode/
+        // --- Parsing the input ---
+        String[] sections = input.split("\\|");
 
-### Mac OS ###
-.DS_Store
+        // Customer details: customerNumber,firstName,surname
+        String[] customerDetails = sections[0].split(",");
+        String customerNumber = customerDetails[0];
+        String firstName = customerDetails[1];
+        String surname = customerDetails[2];
+
+        // Phone details: primaryPhone,secondaryPhone,countryCode,phoneType; (multiple phones separated by ;)
+        String[] phoneDetailsInput = sections[1].split(";");
+        List<PhoneDetails> phoneDetailsList = Arrays.stream(phoneDetailsInput)
+                .map(phoneStr -> {
+                    String[] phoneData = phoneStr.split(",");
+                    return new PhoneDetails(phoneData[0], phoneData[1], phoneData[2].isEmpty() ? null : phoneData[2], phoneData[3]);
+                }).collect(Collectors.toList());
+
+        // Account details: accountNumber,balance,productCode,productModes,linkedAccounts; (multiple accounts separated by ;)
+        String[] accountDetailsInput = sections[2].split(";");
+        List<Account> accountList = Arrays.stream(accountDetailsInput)
+                .map(accountStr -> {
+                    String[] accountData = accountStr.split(",");
+                    String accountNumber = accountData[0];
+                    double balance = Double.parseDouble(accountData[1]);
+                    String productCode = accountData[2];
+                    List<String> productModes = Arrays.asList(accountData[3].split("/"));
+                    List<String> linkedAccounts = Arrays.asList(accountData[4].split("/"));
+                    return new Account(accountNumber, balance, productCode, productModes, linkedAccounts);
+                }).collect(Collectors.toList());
+
+        // --- Create Customer object ---
+        Customer customer = new Customer(customerNumber, firstName, surname, phoneDetailsList);
+
+        // --- Output Customer Information ---
+        System.out.println("\nCustomer Information:");
+        System.out.println("Customer Number: " + customer.getCustomerNumber());
+        System.out.println("Full Name: " + customer.getFullName());
+
+        // --- Print all phone details ---
+        customer.getPhoneDetailsList().forEach(phone -> {
+            System.out.println(phone.getPhoneType() + " Phone: " + phone.getPrimaryNumber() + ", Secondary: " + phone.getSecondaryNumber());
+        });
+
+        // --- Use Streams and flatMap functionality ---
+
+        // Collect all linked account numbers using flatMap
+        List<String> linkedAccountNumbers = accountList.stream()
+                .flatMap(account -> account.getLinkedAccountNumbers().stream())
+                .collect(Collectors.toList());
+        System.out.println("Linked Account Numbers: " + linkedAccountNumbers);
+
+        // Collect all product mode lists using flatMap
+        List<String> allProductModes = accountList.stream()
+                .flatMap(account -> account.getProductModeList().stream())
+                .collect(Collectors.toList());
+        System.out.println("Product Mode List: " + allProductModes);
+
+        // Print current balance for each account using streams
+        accountList.stream()
+                .forEach(account -> System.out.println("Account Number: " + account.getAccountNumber() +
+                        ", Current Balance: " + account.getCurrentBalance()));
+
+        scanner.close();
+    }
+}
