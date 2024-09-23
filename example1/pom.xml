@@ -4,76 +4,89 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // --- Input all details in a single line ---
+        // Prompt the user for input
         System.out.println("Enter details in the following format:");
         System.out.println("customerNumber,firstName,surname|primaryPhone,secondaryPhone,countryCode,phoneType;primaryPhone,secondaryPhone,countryCode,phoneType|accountNumber,balance,productCode,productModes,linkedAccounts;accountNumber,balance,productCode,productModes,linkedAccounts");
 
-        String input = scanner.nextLine();
+        String input = scanner.nextLine();  // Get the input from user
 
-        // --- Parsing the input ---
+        // --- Step 1: Split the input into sections ---
         String[] sections = input.split("\\|");
 
-        // Customer details: customerNumber,firstName,surname
+        // --- Step 2: Handle customer details ---
         String[] customerDetails = sections[0].split(",");
         String customerNumber = customerDetails[0];
         String firstName = customerDetails[1];
         String surname = customerDetails[2];
 
-        // Phone details: primaryPhone,secondaryPhone,countryCode,phoneType; (multiple phones separated by ;)
-        String[] phoneDetailsInput = sections[1].split(";");
+        // --- Step 3: Handle phone details ---
+        String[] phoneDetailsInput = sections[1].split(";"); // Separate multiple phones with ;
         List<PhoneDetails> phoneDetailsList = new ArrayList<>();
+        
         for (String phoneStr : phoneDetailsInput) {
-            String[] phoneData = phoneStr.split(",");
-            PhoneDetails phoneDetails = new PhoneDetails(phoneData[0], phoneData[1], phoneData[2].isEmpty() ? null : phoneData[2], phoneData[3]);
-            phoneDetailsList.add(phoneDetails);
+            String[] phoneData = phoneStr.split(","); // Get each phone's details
+            String primaryPhone = phoneData[0];
+            String secondaryPhone = phoneData[1];
+            String countryCode = phoneData[2].isEmpty() ? "+91" : phoneData[2]; // Default to +91 if empty
+            String phoneType = phoneData[3];
+            
+            PhoneDetails phoneDetails = new PhoneDetails(primaryPhone, secondaryPhone, countryCode, phoneType);
+            phoneDetailsList.add(phoneDetails);  // Add phone details to the list
         }
 
-        // Account details: accountNumber,balance,productCode,productModes,linkedAccounts; (multiple accounts separated by ;)
-        String[] accountDetailsInput = sections[2].split(";");
+        // --- Step 4: Handle account details ---
+        String[] accountDetailsInput = sections[2].split(";"); // Separate multiple accounts with ;
         List<Account> accountList = new ArrayList<>();
+        
         for (String accountStr : accountDetailsInput) {
             String[] accountData = accountStr.split(",");
             String accountNumber = accountData[0];
-            double balance = Double.parseDouble(accountData[1]);
+            double balance = Double.parseDouble(accountData[1]); // Convert balance to double
             String productCode = accountData[2];
-            List<String> productModes = Arrays.asList(accountData[3].split("/"));
-            List<String> linkedAccounts = Arrays.asList(accountData[4].split("/"));
+            List<String> productModes = Arrays.asList(accountData[3].split("/")); // Split modes by /
+            List<String> linkedAccounts = Arrays.asList(accountData[4].split("/")); // Split linked accounts by /
+            
             Account account = new Account(accountNumber, balance, productCode, productModes, linkedAccounts);
-            accountList.add(account);
+            accountList.add(account);  // Add account to the list
         }
 
-        // --- Create Customer object ---
+        // --- Step 5: Create Customer object ---
         Customer customer = new Customer(customerNumber, firstName, surname, phoneDetailsList);
 
-        // --- Output Customer Information ---
+        // --- Step 6: Output details ---
+
+        // Customer information
         System.out.println("\nCustomer Information:");
         System.out.println("Customer Number: " + customer.getCustomerNumber());
         System.out.println("Full Name: " + customer.getFullName());
 
-        // --- Print all phone details ---
+        // Print all phone details
         for (PhoneDetails phone : phoneDetailsList) {
             System.out.println(phone.getPhoneType() + " Phone: " + phone.getPrimaryNumber() + ", Secondary: " + phone.getSecondaryNumber());
         }
 
-        // --- Manually process linked account numbers ---
-        List<String> linkedAccountNumbers = new ArrayList<>();
+        // Print all linked account numbers
+        System.out.println("\nLinked Account Numbers:");
         for (Account account : accountList) {
-            linkedAccountNumbers.addAll(account.getLinkedAccountNumbers());
+            for (String linkedAccount : account.getLinkedAccountNumbers()) {
+                System.out.println(linkedAccount);
+            }
         }
-        System.out.println("Linked Account Numbers: " + linkedAccountNumbers);
 
-        // --- Manually process product mode lists ---
-        List<String> allProductModes = new ArrayList<>();
+        // Print all product modes
+        System.out.println("\nProduct Modes:");
         for (Account account : accountList) {
-            allProductModes.addAll(account.getProductModeList());
+            for (String productMode : account.getProductModeList()) {
+                System.out.println(productMode);
+            }
         }
-        System.out.println("Product Mode List: " + allProductModes);
 
-        // --- Print current balance for each account ---
+        // Print account balances
+        System.out.println("\nAccount Balances:");
         for (Account account : accountList) {
             System.out.println("Account Number: " + account.getAccountNumber() + ", Current Balance: " + account.getCurrentBalance());
         }
 
-        scanner.close();
+        scanner.close();  // Close the scanner
     }
 }
