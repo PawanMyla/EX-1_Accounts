@@ -1,17 +1,78 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+import java.util.*;
 
-    <groupId>com.springboot</groupId>
-    <artifactId>example1</artifactId>
-    <version>1.0-SNAPSHOT</version>
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+        // Input customer details
+        System.out.println("Enter customer details (format: customerNumber,firstName,surname):");
+        String customerInput = scanner.nextLine();
+        String[] customerDetails = customerInput.split(",");
+        String customerNumber = customerDetails[0];
+        String firstName = customerDetails[1];
+        String surname = customerDetails[2];
 
-</project>
+        // Input phone details
+        List<PhoneDetails> phoneDetailsList = new ArrayList<>();
+        System.out.println("Enter phone details (format: primaryPhone,secondaryPhone,countryCode,phoneType;...):");
+        String phoneInput = scanner.nextLine();
+        String[] phoneEntries = phoneInput.split(";");
+        
+        for (String phoneEntry : phoneEntries) {
+            String[] phoneData = phoneEntry.split(",");
+            String primaryPhone = phoneData[0];
+            String secondaryPhone = phoneData[1];
+            String countryCode = phoneData[2].isEmpty() ? null : phoneData[2];
+            String phoneType = phoneData[3];
+            phoneDetailsList.add(new PhoneDetails(primaryPhone, secondaryPhone, countryCode, phoneType));
+        }
+
+        // Input account details
+        List<Account> accountList = new ArrayList<>();
+        System.out.println("Enter account details (format: accountNumber,balance,productCode,productModes,linkedAccounts;...):");
+        String accountInput = scanner.nextLine();
+        String[] accountEntries = accountInput.split(";");
+
+        for (String accountEntry : accountEntries) {
+            String[] accountData = accountEntry.split(",");
+            String accountNumber = accountData[0];
+            double balance = Double.parseDouble(accountData[1]);
+            String productCode = accountData[2];
+            List<String> productModes = Arrays.asList(accountData[3].split("/"));
+            List<String> linkedAccounts = Arrays.asList(accountData[4].split("/"));
+            accountList.add(new Account(accountNumber, balance, productCode, productModes, linkedAccounts));
+        }
+
+        // Create Customer object
+        Customer customer = new Customer(customerNumber, firstName, surname, phoneDetailsList);
+
+        // Output Customer Information
+        System.out.println("\nCustomer Information:");
+        System.out.println("Customer Number: " + customer.getCustomerNumber());
+        System.out.println("Full Name: " + customer.getFullName());
+
+        // Print phone details
+        for (PhoneDetails phone : phoneDetailsList) {
+            System.out.println(phone.getPhoneType() + " Phone: " + phone.getPrimaryNumber() + ", Secondary: " + phone.getSecondaryNumber());
+        }
+
+        // Print linked account numbers
+        System.out.println("Linked Account Numbers:");
+        for (Account account : accountList) {
+            System.out.println(account.getLinkedAccountNumbers());
+        }
+
+        // Print product modes
+        System.out.println("Product Mode List:");
+        for (Account account : accountList) {
+            System.out.println(account.getProductModeList());
+        }
+
+        // Print account balances
+        for (Account account : accountList) {
+            System.out.println("Account Number: " + account.getAccountNumber() + ", Current Balance: " + account.getCurrentBalance());
+        }
+
+        scanner.close();
+    }
+}
