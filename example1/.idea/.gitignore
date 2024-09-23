@@ -1,3 +1,91 @@
-# Default ignored files
-/shelf/
-/workspace.xml
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // --- Input PhoneDetails ---
+        System.out.println("Enter number of phone details: ");
+        int numPhones = Integer.parseInt(scanner.nextLine());
+        List<PhoneDetails> phoneDetailsList = new ArrayList<>();
+
+        for (int i = 0; i < numPhones; i++) {
+            System.out.println("Enter Primary Number: ");
+            String primaryNumber = scanner.nextLine();
+            System.out.println("Enter Secondary Number: ");
+            String secondaryNumber = scanner.nextLine();
+            System.out.println("Enter Country Code (Enter to skip): ");
+            String countryCode = scanner.nextLine().isEmpty() ? null : scanner.nextLine();
+            System.out.println("Enter Phone Type (Primary/Secondary): ");
+            String phoneType = scanner.nextLine();
+
+            PhoneDetails phoneDetails = new PhoneDetails(primaryNumber, secondaryNumber, countryCode, phoneType);
+            phoneDetailsList.add(phoneDetails);
+        }
+
+        // --- Input Customer Details ---
+        System.out.println("Enter Customer Number: ");
+        String customerNumber = scanner.nextLine();
+        System.out.println("Enter First Name: ");
+        String firstName = scanner.nextLine();
+        System.out.println("Enter Surname: ");
+        String surname = scanner.nextLine();
+
+        Customer customer = new Customer(customerNumber, firstName, surname, phoneDetailsList);
+
+        // --- Input Account Details ---
+        System.out.println("Enter number of accounts: ");
+        int numAccounts = Integer.parseInt(scanner.nextLine());
+        List<Account> accountList = new ArrayList<>();
+
+        for (int i = 0; i < numAccounts; i++) {
+            System.out.println("Enter Account Number: ");
+            String accountNumber = scanner.nextLine();
+            System.out.println("Enter Current Balance: ");
+            double currentBalance = Double.parseDouble(scanner.nextLine());
+            System.out.println("Enter Product Code: ");
+            String productCode = scanner.nextLine();
+
+            System.out.println("Enter Product Modes (comma separated): ");
+            List<String> productModes = Arrays.asList(scanner.nextLine().split(","));
+
+            System.out.println("Enter Linked Accounts (comma separated): ");
+            List<String> linkedAccounts = Arrays.asList(scanner.nextLine().split(","));
+
+            Account account = new Account(accountNumber, currentBalance, productCode, productModes, linkedAccounts);
+            accountList.add(account);
+        }
+
+        // --- Output Customer Information ---
+        System.out.println("\nCustomer Information:");
+        System.out.println("Customer Number: " + customer.getCustomerNumber());
+        System.out.println("Full Name: " + customer.getFullName());
+
+        // --- Print all phone details ---
+        customer.getPhoneDetailsList().forEach(phone -> {
+            System.out.println(phone.getPhoneType() + " Phone: " + phone.getPrimaryNumber() + ", Secondary: " + phone.getSecondaryNumber());
+        });
+
+        // --- Use Streams and flatMap functionality ---
+
+        // Collect all linked account numbers using flatMap
+        List<String> linkedAccountNumbers = accountList.stream()
+                .flatMap(account -> account.getLinkedAccountNumbers().stream())
+                .collect(Collectors.toList());
+        System.out.println("Linked Account Numbers: " + linkedAccountNumbers);
+
+        // Collect all product mode lists using flatMap
+        List<String> allProductModes = accountList.stream()
+                .flatMap(account -> account.getProductModeList().stream())
+                .collect(Collectors.toList());
+        System.out.println("Product Mode List: " + allProductModes);
+
+        // Print current balance for each account using streams
+        accountList.stream()
+                .forEach(account -> System.out.println("Account Number: " + account.getAccountNumber() +
+                        ", Current Balance: " + account.getCurrentBalance()));
+
+        scanner.close();
+    }
+}
